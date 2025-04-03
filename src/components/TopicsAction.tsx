@@ -3,11 +3,6 @@ import { ActionPanel, Action, open, showToast, Toast, Icon } from "@raycast/api"
 import { Topic } from "../types";
 import { generateTopicUrl } from "../util/topicUtils";
 
-type SubmenuType = React.ComponentType<{
-  title: string;
-  children: React.ReactNode;
-}>;
-
 interface TopicsActionProps {
   topics: Topic[];
   showAsSubmenu?: boolean;
@@ -33,24 +28,24 @@ export function TopicsAction({ topics, showAsSubmenu = true }: TopicsActionProps
   if (showAsSubmenu) {
     return (
       <React.Fragment>
-      <ActionPanel.Submenu title="View Topics">
-        {topics.map((topic) => (
-          <Action
-            key={topic.id}
-            title={topic.name}
-            onAction={() => handleTopicAction(topic)}
-            icon={Icon.Tag}
-          />
-        ))}
-      </ActionPanel.Submenu>
-    </React.Fragment>
+        <ActionPanel.Submenu title="View Topics">
+          {topics.map((topic) => (
+            <Action key={topic.id} title={topic.name} onAction={() => handleTopicAction(topic)} icon={Icon.Tag} />
+          ))}
+        </ActionPanel.Submenu>
+      </React.Fragment>
     );
   } else {
     // Return individual actions (for use in other contexts)
     return (
       <React.Fragment>
         {topics.map((topic) => (
-          <Action key={topic.id} title={`Topic: ${topic.name}`} onAction={() => handleTopicAction(topic)} icon={Icon.Tag} />
+          <Action
+            key={topic.id}
+            title={`Topic: ${topic.name}`}
+            onAction={() => handleTopicAction(topic)}
+            icon={Icon.Tag}
+          />
         ))}
       </React.Fragment>
     );
