@@ -124,6 +124,7 @@ function sanitizeJsonString(jsonString: string | undefined): string | undefined 
   let sanitized = jsonString.replace(/undefined/g, "null");
 
   // Replace control characters that might break JSON parsing
+  // eslint-disable-next-line no-control-regex
   sanitized = sanitized.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
 
   // Fix unescaped quotes and backslashes that might break JSON
@@ -154,7 +155,8 @@ function sanitizeJsonString(jsonString: string | undefined): string | undefined 
           // Check if this is valid JSON by itself
           JSON.parse(truncated);
           return truncated;
-        } catch (e1) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_e1) {
           // Second try: look for the last valid closing bracket
           const lastValidJson = findLastValidJson(sanitized);
           if (lastValidJson) {
@@ -188,7 +190,8 @@ function findLastValidJson(str: string): string | null {
       const candidate = str.substring(0, lastClosingBracketPos + 1);
       JSON.parse(candidate);
       return candidate;
-    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       // Not valid JSON, continue with other approaches
     }
   }
@@ -202,9 +205,11 @@ function aggressiveSanitization(str: string): string {
   let result = str;
 
   // Replace any non-ASCII characters
+  // eslint-disable-next-line no-control-regex
   result = result.replace(/[^\x00-\x7F]/g, "");
 
   // Replace any unescaped control characters
+  // eslint-disable-next-line no-control-regex
   result = result.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
 
   // Fix unbalanced quotes
@@ -367,8 +372,8 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
     // Initialize variables for the enhanced data
     let makers: User[] = [];
     let hunter: User | undefined;
-    let galleryImages: string[] = [];
-    let shoutouts: Shoutout[] = [];
+    const galleryImages: string[] = [];
+    const shoutouts: Shoutout[] = [];
     let weeklyRank: number | undefined;
     let dailyRank: number | undefined;
     let productHubUrl: string | undefined;
@@ -588,7 +593,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
       // Find all images within the gallery container
       galleryContainer.find("img").each((i, el) => {
         const imgSrc = $(el).attr("src");
-        console.log(`Found gallery image: ${imgSrc}`);
+        // console.log(`Found gallery image: ${imgSrc}`);
 
         if (imgSrc && !galleryImages.includes(imgSrc)) {
           // Process the image URL to get a high-quality version
@@ -686,6 +691,8 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
             // Look for media or gallery fields in the Apollo data
             if (postData.media && Array.isArray(postData.media)) {
               console.log(`Found ${postData.media.length} media items in Apollo data`);
+              // Using 'any' as Apollo state structure can be complex/variable
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               postData.media.forEach((mediaItem: any) => {
                 if (mediaItem.url && !galleryImages.includes(mediaItem.url)) {
                   console.log(`Adding media item from Apollo data: ${mediaItem.url}`);
@@ -703,6 +710,8 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
             // Look for gallery field
             if (postData.gallery && Array.isArray(postData.gallery)) {
               console.log(`Found ${postData.gallery.length} gallery items in Apollo data`);
+              // Using 'any' as Apollo state structure can be complex/variable
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               postData.gallery.forEach((galleryItem: any) => {
                 if (galleryItem.url && !galleryImages.includes(galleryItem.url)) {
                   console.log(`Adding gallery item from Apollo data: ${galleryItem.url}`);
@@ -840,7 +849,7 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
 
     // Extract the product slug from the URL for image fallback
     let thumbnailUrl = metadata.image || product.thumbnail;
-    const slugMatch = product.url.match(/\/posts\/([^\/]+)$/);
+    const slugMatch = product.url.match(/posts\/([^/]+)$/);
     const slug = slugMatch ? slugMatch[1] : null;
 
     // If we have a slug but no valid thumbnail, try to construct a reliable URL

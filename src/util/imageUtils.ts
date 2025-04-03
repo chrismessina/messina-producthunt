@@ -57,13 +57,9 @@ export async function fetchSvgAsBase64(url: string): Promise<string> {
  * Processes a thumbnail URL - converts SVGs to base64 data URLs
  *
  * @param url The image URL to process
- * @param isDetailView Whether this is for the detail view (affects processing)
  * @returns A Promise that resolves to the processed URL
  */
-export async function processThumbnail(
-  url: string | undefined,
-  isDetailView: boolean = false,
-): Promise<string | undefined> {
+export async function processThumbnail(url: string | undefined): Promise<string | undefined> {
   if (!url) return undefined;
 
   // If it's an SVG, convert to base64

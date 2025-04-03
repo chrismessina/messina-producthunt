@@ -1,10 +1,10 @@
 import React from "react";
-import { ActionPanel, Action, Icon, Color, open, showToast, Toast, useNavigation } from "@raycast/api";
-import { Product, User, Topic } from "../types";
-import { TopicsAction } from "./TopicsAction";
+import { ActionPanel, Action, Icon, Color, open, showToast, Toast } from "@raycast/api";
+import { Product, User } from "../types";
 import { ProductDetailView } from "./ProductDetailView";
 import { ProductGalleryView } from "./ProductGalleryView";
 import { FrontpageWrapper } from "./FrontpageWrapper";
+import { TopicsAction } from "./TopicsAction";
 
 type SubmenuType = React.ComponentType<{
   title: string;
@@ -26,7 +26,6 @@ interface ProductActionsProps {
   totalProducts?: number;
   allProducts?: Product[];
   onNavigateToProduct?: (product: Product, newIndex: number) => void;
-  onBackToFeatured?: () => void;
   viewContext: ViewContext;
   showTopics?: boolean;
 }
@@ -38,11 +37,9 @@ export function ProductActions({
   totalProducts,
   allProducts = [],
   onNavigateToProduct,
-  onBackToFeatured,
   viewContext,
   showTopics = true,
 }: ProductActionsProps) {
-  const { push } = useNavigation();
   const handleUserAction = (user: User, role: string) => {
     if (user.profileUrl) {
       showToast({
@@ -52,28 +49,6 @@ export function ProductActions({
       open(user.profileUrl);
     }
   };
-
-  // Handle navigation to product detail view (used in List context)
-  const handleViewDetails = () => {
-    if (viewContext === ViewContext.List) {
-      push(
-        <ProductDetailView
-          product={product}
-          index={index}
-          totalProducts={totalProducts || allProducts.length}
-          onNavigateToProduct={onNavigateToProduct}
-        />,
-      );
-    }
-  };
-
-  // Handle navigation to gallery view
-  const handleViewGallery = () => {
-    push(<ProductGalleryView product={product} images={validGalleryImages} />);
-  };
-
-  // Determine if we should show the gallery action
-  const hasGallery = validGalleryImages.length > 0 || (product.galleryImages && product.galleryImages.length > 0);
 
   return (
     <ActionPanel>
@@ -110,10 +85,10 @@ export function ProductActions({
         />
 
         {/* Gallery action - available in both views if gallery images exist */}
-        {hasGallery && (
+        {validGalleryImages.length > 0 && (
           <Action.Push
             title="View Gallery"
-            icon={Icon.Image}
+            icon={Icon.AppWindowGrid2x2}
             shortcut={{ modifiers: ["cmd"], key: "g" }}
             target={<ProductGalleryView product={product} />}
           />
@@ -122,7 +97,7 @@ export function ProductActions({
         {/* Previous Launches action - only show if there are previous launches */}
         {product.previousLaunches && product.previousLaunches > 0 && product.productHubUrl && (
           <Action.OpenInBrowser
-            icon={Icon.Rocket}
+            icon={Icon.Hourglass}
             title={product.previousLaunches === 1 ? "View Previous Launch" : "View Previous Launches"}
             url={product.productHubUrl}
             shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}

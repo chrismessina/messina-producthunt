@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, showToast, Toast, Clipboard } from "@raycast/api";
+import { Action, ActionPanel, Icon, showToast, Toast } from "@raycast/api";
 import { execSync } from "child_process";
 import { basename } from "path";
 import { homedir } from "os";

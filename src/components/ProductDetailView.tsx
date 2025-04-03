@@ -1,9 +1,8 @@
-import { Detail, Color, showToast, Toast, useNavigation, open, popToRoot, Grid } from "@raycast/api";
-import { Product, User, Shoutout } from "../types";
+import { Detail, Color, showToast, Toast, open } from "@raycast/api";
+import { Product } from "../types";
 import { generateTopicUrl } from "../util/topicUtils";
 import { useState, useEffect } from "react";
 import { enhanceProductWithMetadata } from "../api/scraper";
-import { ProductGalleryView } from "./ProductGalleryView";
 import { ProductActions, ViewContext } from "./ProductActions";
 
 interface ProductDetailViewProps {
@@ -21,7 +20,6 @@ export function ProductDetailView({
 }: ProductDetailViewProps) {
   const [product, setProduct] = useState<Product>(initialProduct);
   const [isLoading, setIsLoading] = useState(true);
-  const { pop, push } = useNavigation();
 
   useEffect(() => {
     const fetchEnhancedProduct = async () => {
@@ -80,7 +78,6 @@ export function ProductDetailView({
           index={index}
           totalProducts={totalProducts}
           onNavigateToProduct={onNavigateToProduct}
-          onBackToFeatured={popToRoot}
           viewContext={ViewContext.Detail}
           showTopics={true}
         />

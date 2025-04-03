@@ -43,6 +43,7 @@ export function cleanText(text: string | undefined | null): string {
 
   // Remove control characters and normalize whitespace in one final pass
   cleaned = cleaned
+    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, "")
     .trim()
     .replace(/\s+/g, " ");
@@ -73,6 +74,7 @@ export function generateTopicSlug(topic: Topic): string {
     .replace(/[&+]/g, "-and-")
     .replace(/[^\w\s-]/g, "-")
     // Replace Unicode control characters and zero-width spaces
+    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, "")
     // Convert to lowercase
     .toLowerCase()

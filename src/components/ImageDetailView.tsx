@@ -1,6 +1,6 @@
 import { Detail, ActionPanel, Action, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { Product } from "../types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ImageActions } from "./ImageActions";
 import { ProductDetailView } from "./ProductDetailView";
 import { ProductGalleryView } from "./ProductGalleryView";
