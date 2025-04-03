@@ -1,80 +1,93 @@
-import { ActionPanel, Action, List, Icon } from "@raycast/api";
+import React, { JSX } from "react";
+import { List, Icon, Color, useNavigation } from "@raycast/api";
 import { Product } from "../types";
-import { saveProduct, removeSavedProduct, isProductSaved } from "../api/savedProducts";
-import { useState, useEffect } from "react";
 import { ProductDetailView } from "./ProductDetailView";
+import { ProductActions, ViewContext } from "./ProductActions";
 
 interface ProductListItemProps {
   product: Product;
   showTopics?: boolean;
+  additionalAccessories?: List.Item.Accessory[];
+  featured?: boolean;
+  index?: number;
+  totalProducts?: number;
+  allProducts?: Product[];
 }
 
-export function ProductListItem({ product, showTopics = true }: ProductListItemProps) {
-  const [isSaved, setIsSaved] = useState<boolean>(false);
-  
-  useEffect(() => {
-    const checkIfSaved = async () => {
-      const saved = await isProductSaved(product.id);
-      setIsSaved(saved);
-    };
-    
-    checkIfSaved();
-  }, [product.id]);
-  
-  const handleSaveProduct = async () => {
-    if (isSaved) {
-      await removeSavedProduct(product.id);
-      setIsSaved(false);
-    } else {
-      await saveProduct(product);
-      setIsSaved(true);
-    }
-  };
+export function ProductListItem({ 
+  product, 
+  showTopics = true, 
+  additionalAccessories = [], 
+  featured = false,
+  index,
+  totalProducts,
+  allProducts = []
+}: ProductListItemProps) {
+  const { push } = useNavigation();
   
   const formattedDate = new Date(product.createdAt).toLocaleDateString();
   
+  // Use featuredImage if available, otherwise fall back to thumbnail
+  const thumbnailSource = product.featuredImage || product.thumbnail || Icon.Document;
+  
+  let baseAccessories: List.Item.Accessory[] = [];
+  
+  if (featured) {
+    baseAccessories = [
+      { text: `${product.votesCount}`, icon: { source: Icon.ArrowUp } },
+      { text: product.commentsCount ? `${product.commentsCount}` : undefined, icon: { source: Icon.Bubble } },
+      ...(product.maker ? [{ text: `by ${product.maker.name}` }] : []),
+    ];
+  } else {
+    baseAccessories = [
+      { text: `${product.votesCount} votes` },
+      { text: formattedDate },
+      ...(product.maker ? [{ text: `by ${product.maker.name}` }] : []),
+    ];
+  }
+  
+  const accessories = [...additionalAccessories, ...baseAccessories];
+  
+  const itemProps = featured ? {
+    title: product.name,
+    subtitle: product.tagline,
+    icon: { source: thumbnailSource },
+    accessories,
+    tintColor: Color.Yellow,
+  } : {
+    title: product.name,
+    subtitle: product.tagline,
+    icon: { source: thumbnailSource },
+    accessories,
+  };
+  
+  const handleNavigateToProduct = (currentProduct: Product, newIndex: number) => {
+    if (allProducts && allProducts.length > 0 && newIndex >= 0 && newIndex < allProducts.length) {
+      push(
+        <ProductDetailView 
+          product={allProducts[newIndex]} 
+          index={newIndex}
+          totalProducts={totalProducts || allProducts.length}
+          onNavigateToProduct={handleNavigateToProduct}
+        />
+      );
+    }
+  };
+  
   return (
     <List.Item
-      title={product.name}
-      subtitle={product.tagline}
-      icon={{ source: product.thumbnail || Icon.Document }}
-      accessories={[
-        { text: `${product.votesCount} votes` },
-        { text: formattedDate },
-        ...(product.maker ? [{ text: `by ${product.maker.name}` }] : []),
-      ]}
+      {...itemProps}
       actions={
-        <ActionPanel>
-          <Action.Push
-            title="View Details"
-            icon={Icon.Eye}
-            target={<ProductDetailView product={product} />}
-          />
-          <Action.OpenInBrowser url={product.url} title="Open in Browser" />
-          <Action
-            title={isSaved ? "Remove from Saved" : "Save Product"}
-            icon={isSaved ? Icon.Trash : Icon.Star}
-            onAction={handleSaveProduct}
-          />
-          <Action.CopyToClipboard
-            title="Copy URL"
-            content={product.url}
-            shortcut={{ modifiers: ["cmd"], key: "." }}
-          />
-          {showTopics && product.topics && product.topics.length > 0 && (
-            <ActionPanel.Submenu title="View Topics">
-              {product.topics.map((topic) => (
-                <Action.Push
-                  key={topic.id}
-                  title={topic.name}
-                  target={<List.Item title={`Products in ${topic.name}`} />}
-                  shortcut={{ modifiers: ["cmd"], key: "t" }}
-                />
-              ))}
-            </ActionPanel.Submenu>
-          )}
-        </ActionPanel>
+        <ProductActions
+          product={product}
+          index={index}
+          totalProducts={totalProducts}
+          allProducts={allProducts}
+          onNavigateToProduct={handleNavigateToProduct}
+          viewContext={ViewContext.List}
+          showTopics={showTopics}
+        /> as JSX.Element
       }
-    />
+    /> as JSX.Element
   );
 }

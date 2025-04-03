@@ -5,11 +5,21 @@ export interface Product {
   description: string;
   url: string;
   thumbnail: string;
+  featuredImage?: string; // High-quality image from OpenGraph metadata
   votesCount: number;
   commentsCount: number;
   createdAt: string;
   topics: Topic[];
   maker?: User;
+  // Additional detailed information
+  makers?: User[];
+  hunter?: User;
+  galleryImages?: string[];
+  shoutouts?: Shoutout[];
+  weeklyRank?: number;
+  dailyRank?: number;
+  productHubUrl?: string;
+  previousLaunches?: number;
 }
 
 export interface Topic {
@@ -30,25 +40,7 @@ export interface User {
   twitterUsername?: string;
   productsCount?: number;
   followersCount?: number;
-}
-
-export interface Collection {
-  id: string;
-  name: string;
-  title: string;
-  description: string;
-  productsCount: number;
-  user: User;
-}
-
-export interface SavedProduct {
-  id: string;
-  productId: string;
-  name: string;
-  tagline: string;
-  url: string;
-  thumbnail: string;
-  savedAt: string;
+  profileUrl?: string;
 }
 
 export interface ApiResponse<T> {
@@ -105,3 +97,11 @@ export interface LaunchArchiveResponse {
 }
 
 export type TimeRange = "daily" | "weekly" | "monthly" | "yearly";
+
+export interface Shoutout {
+  id: string;
+  name: string;
+  tagline?: string;
+  url: string;
+  thumbnail?: string;
+}
