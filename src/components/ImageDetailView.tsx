@@ -15,21 +15,17 @@ interface ImageDetailProps {
 export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: ImageDetailProps) {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   // Create markdown content for the image details
   const markdown = `
   ![](${imageUrl})
   `;
-  
+
   // Return to gallery view
   const returnToGallery = () => {
-    navigation.push(
-      <ProductGalleryView 
-        product={product}
-      />
-    );
+    navigation.push(<ProductGalleryView product={product} />);
   };
-  
+
   // Handle navigation to previous image
   const navigateToPrevious = () => {
     if (imageIndex > 0) {
@@ -39,12 +35,7 @@ export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: Im
       setIsLoading(true);
       navigation.pop();
       navigation.push(
-        <ImageDetailView 
-          product={product} 
-          imageUrl={prevImageUrl} 
-          imageIndex={prevIndex} 
-          allImages={allImages} 
-        />
+        <ImageDetailView product={product} imageUrl={prevImageUrl} imageIndex={prevIndex} allImages={allImages} />,
       );
     } else {
       showToast({
@@ -53,7 +44,7 @@ export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: Im
       });
     }
   };
-  
+
   // Handle navigation to next image
   const navigateToNext = () => {
     if (imageIndex < allImages.length - 1) {
@@ -63,12 +54,7 @@ export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: Im
       setIsLoading(true);
       navigation.pop();
       navigation.push(
-        <ImageDetailView 
-          product={product} 
-          imageUrl={nextImageUrl} 
-          imageIndex={nextIndex} 
-          allImages={allImages} 
-        />
+        <ImageDetailView product={product} imageUrl={nextImageUrl} imageIndex={nextIndex} allImages={allImages} />,
       );
     } else {
       showToast({
@@ -77,7 +63,7 @@ export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: Im
       });
     }
   };
-  
+
   return (
     <Detail
       markdown={markdown}
@@ -115,15 +101,11 @@ export function ImageDetailView({ product, imageUrl, imageIndex, allImages }: Im
               shortcut={{ modifiers: ["cmd"], key: "d" }}
               onAction={() => {
                 // Push a new product detail view
-                navigation.push(
-                  <ProductDetailView 
-                    product={product}
-                  />
-                );
+                navigation.push(<ProductDetailView product={product} />);
               }}
             />
           </ActionPanel.Section>
-          
+
           {/* Image Actions */}
           <ActionPanel.Section title="Actions">
             <ImageActions imageUrl={imageUrl} />

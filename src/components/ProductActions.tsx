@@ -16,7 +16,7 @@ type SubmenuType = React.ComponentType<{
  */
 export enum ViewContext {
   List = "list",
-  Detail = "detail"
+  Detail = "detail",
 }
 
 interface ProductActionsProps {
@@ -31,16 +31,16 @@ interface ProductActionsProps {
   showTopics?: boolean;
 }
 
-export function ProductActions({ 
-  product, 
-  validGalleryImages = [], 
+export function ProductActions({
+  product,
+  validGalleryImages = [],
   index,
   totalProducts,
   allProducts = [],
   onNavigateToProduct,
   onBackToFeatured,
   viewContext,
-  showTopics = true
+  showTopics = true,
 }: ProductActionsProps) {
   const { push } = useNavigation();
   const handleUserAction = (user: User, role: string) => {
@@ -57,12 +57,12 @@ export function ProductActions({
   const handleViewDetails = () => {
     if (viewContext === ViewContext.List) {
       push(
-        <ProductDetailView 
-          product={product} 
+        <ProductDetailView
+          product={product}
           index={index}
           totalProducts={totalProducts || allProducts.length}
           onNavigateToProduct={onNavigateToProduct}
-        />
+        />,
       );
     }
   };
@@ -73,8 +73,7 @@ export function ProductActions({
   };
 
   // Determine if we should show the gallery action
-  const hasGallery = validGalleryImages.length > 0 || 
-    (product.galleryImages && product.galleryImages.length > 0);
+  const hasGallery = validGalleryImages.length > 0 || (product.galleryImages && product.galleryImages.length > 0);
 
   return (
     <ActionPanel>
@@ -86,8 +85,8 @@ export function ProductActions({
             title="View Details"
             icon={Icon.Eye}
             target={
-              <ProductDetailView 
-                product={product} 
+              <ProductDetailView
+                product={product}
                 index={index}
                 totalProducts={totalProducts || allProducts.length}
                 onNavigateToProduct={onNavigateToProduct}
@@ -97,9 +96,9 @@ export function ProductActions({
         )}
 
         {/* In Detail view, first action is Open in Browser */}
-        <Action.OpenInBrowser 
-          url={product.url} 
-          title="Open in Browser" 
+        <Action.OpenInBrowser
+          url={product.url}
+          title="Open in Browser"
           shortcut={viewContext === ViewContext.Detail ? undefined : { modifiers: ["cmd"], key: "o" }}
         />
 
@@ -123,7 +122,7 @@ export function ProductActions({
         {/* Previous Launches action - only show if there are previous launches */}
         {product.previousLaunches && product.previousLaunches > 0 && product.productHubUrl && (
           <Action.OpenInBrowser
-          icon={Icon.Rocket}
+            icon={Icon.Rocket}
             title={product.previousLaunches === 1 ? "View Previous Launch" : "View Previous Launches"}
             url={product.productHubUrl}
             shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
@@ -151,30 +150,31 @@ export function ProductActions({
                     onAction={() => handleUserAction(product.hunter!, "hunter")}
                   />
                 )}
-                
+
                 {/* Makers */}
-                {product.makers && product.makers.map((maker) => (
-                  <Action
-                    key={maker.id || maker.username}
-                    title={`Maker: ${maker.name}`}
-                    icon={{ source: Icon.Person, tintColor: Color.Purple }}
-                    onAction={() => handleUserAction(maker, "maker")}
-                  />
-                ))}
+                {product.makers &&
+                  product.makers.map((maker) => (
+                    <Action
+                      key={maker.id || maker.username}
+                      title={`Maker: ${maker.name}`}
+                      icon={{ source: Icon.Person, tintColor: Color.Purple }}
+                      onAction={() => handleUserAction(maker, "maker")}
+                    />
+                  ))}
               </Submenu>
             );
           })()}
         </React.Fragment>
       )}
-      
+
       {/* Navigation Actions - only show in Detail view */}
-      {viewContext === ViewContext.Detail && typeof index === 'number' && totalProducts && onNavigateToProduct && (
+      {viewContext === ViewContext.Detail && typeof index === "number" && totalProducts && onNavigateToProduct && (
         <ActionPanel.Section title="Navigation">
           {index > 0 && (
             <Action
               title="Previous Product"
               icon={Icon.ArrowLeft}
-              shortcut={{ key: "arrowLeft" , modifiers: [] }}
+              shortcut={{ key: "arrowLeft", modifiers: [] }}
               onAction={() => {
                 if (onNavigateToProduct) {
                   onNavigateToProduct(product, index - 1);
@@ -186,7 +186,7 @@ export function ProductActions({
             <Action
               title="Next Product"
               icon={Icon.ArrowRight}
-              shortcut={{ key: "arrowRight" , modifiers: [] }}
+              shortcut={{ key: "arrowRight", modifiers: [] }}
               onAction={() => {
                 if (onNavigateToProduct) {
                   onNavigateToProduct(product, index + 1);

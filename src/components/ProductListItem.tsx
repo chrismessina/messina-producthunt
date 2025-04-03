@@ -14,24 +14,24 @@ interface ProductListItemProps {
   allProducts?: Product[];
 }
 
-export function ProductListItem({ 
-  product, 
-  showTopics = true, 
-  additionalAccessories = [], 
+export function ProductListItem({
+  product,
+  showTopics = true,
+  additionalAccessories = [],
   featured = false,
   index,
   totalProducts,
-  allProducts = []
+  allProducts = [],
 }: ProductListItemProps) {
   const { push } = useNavigation();
-  
+
   const formattedDate = new Date(product.createdAt).toLocaleDateString();
-  
+
   // Use featuredImage if available, otherwise fall back to thumbnail
   const thumbnailSource = product.featuredImage || product.thumbnail || Icon.Document;
-  
+
   let baseAccessories: List.Item.Accessory[] = [];
-  
+
   if (featured) {
     baseAccessories = [
       { text: `${product.votesCount}`, icon: { source: Icon.ArrowUp } },
@@ -45,49 +45,53 @@ export function ProductListItem({
       ...(product.maker ? [{ text: `by ${product.maker.name}` }] : []),
     ];
   }
-  
+
   const accessories = [...additionalAccessories, ...baseAccessories];
-  
-  const itemProps = featured ? {
-    title: product.name,
-    subtitle: product.tagline,
-    icon: { source: thumbnailSource },
-    accessories,
-    tintColor: Color.Yellow,
-  } : {
-    title: product.name,
-    subtitle: product.tagline,
-    icon: { source: thumbnailSource },
-    accessories,
-  };
-  
+
+  const itemProps = featured
+    ? {
+        title: product.name,
+        subtitle: product.tagline,
+        icon: { source: thumbnailSource },
+        accessories,
+        tintColor: Color.Yellow,
+      }
+    : {
+        title: product.name,
+        subtitle: product.tagline,
+        icon: { source: thumbnailSource },
+        accessories,
+      };
+
   const handleNavigateToProduct = (currentProduct: Product, newIndex: number) => {
     if (allProducts && allProducts.length > 0 && newIndex >= 0 && newIndex < allProducts.length) {
       push(
-        <ProductDetailView 
-          product={allProducts[newIndex]} 
+        <ProductDetailView
+          product={allProducts[newIndex]}
           index={newIndex}
           totalProducts={totalProducts || allProducts.length}
           onNavigateToProduct={handleNavigateToProduct}
-        />
+        />,
       );
     }
   };
-  
+
   return (
     <List.Item
       {...itemProps}
       actions={
-        <ProductActions
-          product={product}
-          index={index}
-          totalProducts={totalProducts}
-          allProducts={allProducts}
-          onNavigateToProduct={handleNavigateToProduct}
-          viewContext={ViewContext.List}
-          showTopics={showTopics}
-        /> as JSX.Element
+        (
+          <ProductActions
+            product={product}
+            index={index}
+            totalProducts={totalProducts}
+            allProducts={allProducts}
+            onNavigateToProduct={handleNavigateToProduct}
+            viewContext={ViewContext.List}
+            showTopics={showTopics}
+          />
+        ) as JSX.Element
       }
-    /> as JSX.Element
-  );
+    />
+  ) as JSX.Element;
 }

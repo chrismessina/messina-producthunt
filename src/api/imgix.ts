@@ -8,14 +8,14 @@
  * @see https://docs.imgix.com/en-US/apis/rendering/format
  */
 export enum ImgixFormat {
-  PNG = 'png',
-  JPG = 'jpg',
-  WEBP = 'webp',
-  AVIF = 'avif',
-  GIF = 'gif',
-  JP2 = 'jp2',
-  JXRPB = 'jxrpb',
-  PJPG = 'pjpg',
+  PNG = "png",
+  JPG = "jpg",
+  WEBP = "webp",
+  AVIF = "avif",
+  GIF = "gif",
+  JP2 = "jp2",
+  JXRPB = "jxrpb",
+  PJPG = "pjpg",
 }
 
 /**
@@ -23,15 +23,15 @@ export enum ImgixFormat {
  * @see https://docs.imgix.com/en-US/apis/rendering/size/fit
  */
 export enum ImgixFit {
-  CLAMP = 'clamp',
-  CLIP = 'clip',
-  CROP = 'crop',
-  FACEAREA = 'facearea',
-  FILL = 'fill',
-  FILLMAX = 'fillmax',
-  MAX = 'max',
-  MIN = 'min',
-  SCALE = 'scale',
+  CLAMP = "clamp",
+  CLIP = "clip",
+  CROP = "crop",
+  FACEAREA = "facearea",
+  FILL = "fill",
+  FILLMAX = "fillmax",
+  MAX = "max",
+  MIN = "min",
+  SCALE = "scale",
 }
 
 /**
@@ -57,53 +57,53 @@ export interface ImgixOptions {
  */
 export function processImageUrl(url: string, options: ImgixOptions = {}): string {
   if (!url) return "";
-  
+
   try {
     // If the URL is not already an imgix URL and doesn't start with http, return as is
-    if (!url.includes('imgix.net') && !url.startsWith('http')) {
+    if (!url.includes("imgix.net") && !url.startsWith("http")) {
       return url;
     }
-    
+
     // Parse the URL
     const parsedUrl = new URL(url);
-    
+
     // Apply imgix parameters
     if (options.width) {
-      parsedUrl.searchParams.set('w', options.width.toString());
+      parsedUrl.searchParams.set("w", options.width.toString());
     }
-    
+
     if (options.height) {
-      parsedUrl.searchParams.set('h', options.height.toString());
+      parsedUrl.searchParams.set("h", options.height.toString());
     }
-    
+
     if (options.format) {
-      parsedUrl.searchParams.set('fm', options.format);
+      parsedUrl.searchParams.set("fm", options.format);
     }
-    
+
     if (options.fit) {
-      parsedUrl.searchParams.set('fit', options.fit);
+      parsedUrl.searchParams.set("fit", options.fit);
     }
-    
+
     if (options.quality) {
-      parsedUrl.searchParams.set('q', options.quality.toString());
+      parsedUrl.searchParams.set("q", options.quality.toString());
     }
-    
+
     if (options.auto && options.auto.length > 0) {
-      parsedUrl.searchParams.set('auto', options.auto.join(','));
+      parsedUrl.searchParams.set("auto", options.auto.join(","));
     }
-    
+
     if (options.dpr) {
-      parsedUrl.searchParams.set('dpr', options.dpr.toString());
+      parsedUrl.searchParams.set("dpr", options.dpr.toString());
     }
-    
+
     if (options.bg) {
-      parsedUrl.searchParams.set('bg', options.bg);
+      parsedUrl.searchParams.set("bg", options.bg);
     }
-    
+
     if (options.pad) {
-      parsedUrl.searchParams.set('pad', options.pad.toString());
+      parsedUrl.searchParams.set("pad", options.pad.toString());
     }
-    
+
     return parsedUrl.toString();
   } catch (error) {
     console.error("Error processing image URL:", error);
@@ -120,37 +120,37 @@ export function processImageUrl(url: string, options: ImgixOptions = {}): string
  */
 export function processThumbnail(url: string, options: { isDetailView?: boolean } = {}): string {
   if (!url) return "";
-  
+
   const { isDetailView = false } = options;
-  
+
   // Default dimensions based on view type
   const width = isDetailView ? 1024 : 64;
   const height = isDetailView ? 512 : 64;
   const quality = isDetailView ? 80 : undefined;
-  
+
   try {
     // Handle SVG images - convert to PNG format
-    if (url.includes('.svg')) {
+    if (url.includes(".svg")) {
       return processImageUrl(url, {
         format: ImgixFormat.PNG,
         width,
         height,
         fit: ImgixFit.CROP,
-        auto: ['format'],
+        auto: ["format"],
         ...(quality && { quality }),
       });
     }
-    
+
     // For other image types
     return processImageUrl(url, {
       width,
       height,
       fit: ImgixFit.CROP,
-      auto: ['format', 'compress'],
+      auto: ["format", "compress"],
       ...(quality && { quality }),
     });
   } catch (error) {
-    console.error(`Error processing ${isDetailView ? 'detail' : 'list'} thumbnail:`, error);
+    console.error(`Error processing ${isDetailView ? "detail" : "list"} thumbnail:`, error);
     return url;
   }
 }

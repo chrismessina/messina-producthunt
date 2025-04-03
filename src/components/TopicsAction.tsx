@@ -20,12 +20,12 @@ export function TopicsAction({ topics, showAsSubmenu = true }: TopicsActionProps
 
   const handleTopicAction = (topic: Topic) => {
     const topicUrl = generateTopicUrl(topic);
-    
+
     showToast({
       style: Toast.Style.Success,
       title: `Opening topic: ${topic.name}`,
     });
-    
+
     // Open the topic URL in the browser
     open(topicUrl);
   };
@@ -55,11 +55,7 @@ export function TopicsAction({ topics, showAsSubmenu = true }: TopicsActionProps
     return (
       <React.Fragment>
         {topics.map((topic) => (
-          <Action
-            key={topic.id}
-            title={`Topic: ${topic.name}`}
-            onAction={() => handleTopicAction(topic)}
-          />
+          <Action key={topic.id} title={`Topic: ${topic.name}`} onAction={() => handleTopicAction(topic)} />
         ))}
       </React.Fragment>
     );

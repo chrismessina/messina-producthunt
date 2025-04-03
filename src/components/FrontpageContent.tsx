@@ -18,7 +18,7 @@ export function FrontpageContent() {
       try {
         setIsLoading(true);
         const { products, error } = await getFrontpageProducts();
-        
+
         if (error) {
           await showToast({
             style: Toast.Style.Failure,
@@ -53,10 +53,10 @@ export function FrontpageContent() {
         <>
           <List.Section title="Today's Featured Launches">
             {products.map((product, index) => (
-              <ProductListItem 
-                key={product.id} 
-                product={product} 
-                featured={true} 
+              <ProductListItem
+                key={product.id}
+                product={product}
+                featured={true}
                 index={index}
                 totalProducts={products.length}
                 allProducts={products}

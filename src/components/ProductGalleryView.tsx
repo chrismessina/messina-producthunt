@@ -28,12 +28,12 @@ export function ProductGalleryView({ product, images }: ProductGalleryViewProps)
     // Otherwise, use the gallery images from the product
     if (product.galleryImages && product.galleryImages.length > 0) {
       // Filter to ensure only valid URLs
-      const validImages = product.galleryImages.filter(img => 
-        img && (img.startsWith("http") || img.startsWith("data:"))
+      const validImages = product.galleryImages.filter(
+        (img) => img && (img.startsWith("http") || img.startsWith("data:")),
       );
       setGalleryImages(validImages);
     }
-    
+
     setIsLoading(false);
   }, [product, images]);
 
@@ -46,7 +46,7 @@ export function ProductGalleryView({ product, images }: ProductGalleryViewProps)
         searchBarPlaceholder="Search images..."
         columns={3}
       >
-        <Grid.EmptyView 
+        <Grid.EmptyView
           title="No Gallery Images"
           description="This product doesn't have any gallery images to display."
           icon={Icon.Image}
@@ -56,9 +56,7 @@ export function ProductGalleryView({ product, images }: ProductGalleryViewProps)
   }
 
   // Filter gallery images based on search text
-  const filteredGalleryImages = galleryImages.filter(url => 
-    url.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredGalleryImages = galleryImages.filter((url) => url.toLowerCase().includes(searchText.toLowerCase()));
 
   return (
     <Grid
@@ -95,11 +93,7 @@ export function ProductGalleryView({ product, images }: ProductGalleryViewProps)
                   icon={Icon.Document}
                   shortcut={{ modifiers: ["cmd"], key: "d" }}
                   onAction={() => {
-                    navigation.push(
-                      <ProductDetailView 
-                        product={product}
-                      />
-                    );
+                    navigation.push(<ProductDetailView product={product} />);
                   }}
                 />
                 <ActionPanel.Section title="Image Actions">

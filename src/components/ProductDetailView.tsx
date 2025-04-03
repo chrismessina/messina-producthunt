@@ -13,11 +13,16 @@ interface ProductDetailViewProps {
   onNavigateToProduct?: (product: Product, index: number) => void;
 }
 
-export function ProductDetailView({ product: initialProduct, index, totalProducts, onNavigateToProduct }: ProductDetailViewProps) {
+export function ProductDetailView({
+  product: initialProduct,
+  index,
+  totalProducts,
+  onNavigateToProduct,
+}: ProductDetailViewProps) {
   const [product, setProduct] = useState<Product>(initialProduct);
   const [isLoading, setIsLoading] = useState(true);
   const { pop, push } = useNavigation();
-  
+
   useEffect(() => {
     const fetchEnhancedProduct = async () => {
       setIsLoading(true);
@@ -32,36 +37,37 @@ export function ProductDetailView({ product: initialProduct, index, totalProduct
         setIsLoading(false);
       }
     };
-    
+
     fetchEnhancedProduct();
   }, [initialProduct.id]);
-  
+
   const formattedDate = new Date(product.createdAt).toLocaleDateString();
-  
+
   const displayImage = product.featuredImage || "";
-  
+
   // Filter gallery images to ensure only valid URLs are used
-  const validGalleryImages = product.galleryImages?.filter(img => {
-    try {
-      // Check if it's a valid URL or base64 data URL
-      return img && (img.startsWith('http') || img.startsWith('data:'));
-    } catch (e) {
-      console.error('Invalid gallery image URL:', img, e);
-      return false;
-    }
-  }) || [];
-  
+  const validGalleryImages =
+    product.galleryImages?.filter((img) => {
+      try {
+        // Check if it's a valid URL or base64 data URL
+        return img && (img.startsWith("http") || img.startsWith("data:"));
+      } catch (e) {
+        console.error("Invalid gallery image URL:", img, e);
+        return false;
+      }
+    }) || [];
+
   // Create markdown content for the product details
   const markdown = `
   # ${product.name}
   
   _${product.tagline}_
   
-  ${displayImage ? `![${product.name}](${displayImage})` : ''}
+  ${displayImage ? `![${product.name}](${displayImage})` : ""}
   
   ${product.description || "No description available."}
   `;
-  
+
   return (
     <Detail
       markdown={markdown}
@@ -85,30 +91,26 @@ export function ProductDetailView({ product: initialProduct, index, totalProduct
           <Detail.Metadata.Label title="Votes" text={product.votesCount.toString()} />
           <Detail.Metadata.Label title="Comments" text={product.commentsCount.toString()} />
           <Detail.Metadata.Label title="Launch Date" text={formattedDate} />
-          
+
           {/* Ranking Information */}
-          {product.dailyRank && (
-            <Detail.Metadata.Label title="Daily Rank" text={`#${product.dailyRank}`} />
-          )}
-          {product.weeklyRank && (
-            <Detail.Metadata.Label title="Weekly Rank" text={`#${product.weeklyRank}`} />
-          )}
-          
+          {product.dailyRank && <Detail.Metadata.Label title="Daily Rank" text={`#${product.dailyRank}`} />}
+          {product.weeklyRank && <Detail.Metadata.Label title="Weekly Rank" text={`#${product.weeklyRank}`} />}
+
           {/* Previous Launches */}
           {product.previousLaunches && product.productHubUrl && (
-            <Detail.Metadata.Link 
-              title="Previous Launches" 
+            <Detail.Metadata.Link
+              title="Previous Launches"
               text={`${product.previousLaunches} launches`}
               target={product.productHubUrl}
             />
           )}
-          
+
           {/* Hunter Section - Always show hunter if available */}
           {product.hunter ? (
             <Detail.Metadata.TagList title="Hunter">
-              <Detail.Metadata.TagList.Item 
-                key={product.hunter.id || 'hunter'} 
-                text={product.hunter.name} 
+              <Detail.Metadata.TagList.Item
+                key={product.hunter.id || "hunter"}
+                text={product.hunter.name}
                 color={Color.Orange}
                 onAction={() => {
                   if (product.hunter?.profileUrl) {
@@ -129,14 +131,14 @@ export function ProductDetailView({ product: initialProduct, index, totalProduct
               />
             </Detail.Metadata.TagList>
           ) : null}
-          
+
           {/* Makers Section - Only show actual makers, not the hunter */}
           {product.makers && product.makers.length > 0 ? (
             <Detail.Metadata.TagList title="Makers">
               {product.makers.map((maker, index) => (
-                <Detail.Metadata.TagList.Item 
-                  key={maker.id || `maker-${index}`} 
-                  text={maker.name} 
+                <Detail.Metadata.TagList.Item
+                  key={maker.id || `maker-${index}`}
+                  text={maker.name}
                   color={Color.Purple}
                   onAction={() => {
                     if (maker.profileUrl) {
@@ -161,23 +163,23 @@ export function ProductDetailView({ product: initialProduct, index, totalProduct
             // Only show maker if it's not the same person as the hunter
             <Detail.Metadata.Label title="Maker" text={product.maker.name} />
           ) : null}
-          
+
           {/* Topics Section */}
           {product.topics && product.topics.length > 0 && (
             <Detail.Metadata.TagList title="Topics">
-              {product.topics.map(topic => (
-                <Detail.Metadata.TagList.Item 
-                  key={topic.id} 
-                  text={topic.name} 
+              {product.topics.map((topic) => (
+                <Detail.Metadata.TagList.Item
+                  key={topic.id}
+                  text={topic.name}
                   color={Color.Blue}
                   onAction={() => {
                     const topicUrl = generateTopicUrl(topic);
-                    
+
                     showToast({
                       style: Toast.Style.Success,
                       title: `Opening topic: ${topic.name}`,
                     });
-                    
+
                     // Open the topic URL in the browser
                     open(topicUrl);
                   }}
@@ -185,14 +187,14 @@ export function ProductDetailView({ product: initialProduct, index, totalProduct
               ))}
             </Detail.Metadata.TagList>
           )}
-          
+
           {/* Built With Section */}
           {product.shoutouts && product.shoutouts.length > 0 && (
             <Detail.Metadata.TagList title="Built With">
-              {product.shoutouts.map(shoutout => (
-                <Detail.Metadata.TagList.Item 
-                  key={shoutout.id} 
-                  text={shoutout.name} 
+              {product.shoutouts.map((shoutout) => (
+                <Detail.Metadata.TagList.Item
+                  key={shoutout.id}
+                  text={shoutout.name}
                   color={Color.Green}
                   onAction={() => {
                     showToast({
