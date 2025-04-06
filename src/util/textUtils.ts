@@ -10,15 +10,17 @@
 export function cleanText(text: string | undefined | null): string {
   if (!text) return "";
 
-  return text
-    // Convert all Unicode escapes (like \u0026)
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => 
-      String.fromCharCode(parseInt(hex, 16))
-    )
-    // Replace common HTML entities
-    .replace(/&(amp|lt|gt|quot|#39);/g, (_, entity: 'amp'|'lt'|'gt'|'quot'|'#39') => 
-      ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity] || _
-    );
+  return (
+    text
+      // Convert all Unicode escapes (like \u0026)
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+      // Replace common HTML entities
+      .replace(
+        /&(amp|lt|gt|quot|#39);/g,
+        (_, entity: "amp" | "lt" | "gt" | "quot" | "#39") =>
+          ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[entity] || _,
+      )
+  );
 }
 
 /**
