@@ -292,7 +292,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
     let dailyRank: number | undefined;
     let productHubUrl: string | undefined;
     let previousLaunches: number | undefined;
-    
+
     // Initialize flags to track what sections we've found
     let foundHunterSection = false;
     let foundMakerSection = false;
@@ -347,28 +347,30 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
     // Fallback to HTML scraping if Apollo data didn't provide what we need
 
     // ALWAYS prioritize the "About this launch" section as the most reliable source
-    const aboutLaunchSection = $('[data-test="about-section"], div.text-14.font-normal.text-dark-gray.text-gray-600, h2:contains("About this launch")').parent();
-    
+    const aboutLaunchSection = $(
+      '[data-test="about-section"], div.text-14.font-normal.text-dark-gray.text-gray-600, h2:contains("About this launch")',
+    ).parent();
+
     if (aboutLaunchSection.length > 0) {
       const aboutText = aboutLaunchSection.text();
       console.log("About launch text:", aboutText);
-      
+
       // STEP 1: Extract hunter information - EVERY product has exactly one hunter
       if (!hunter) {
         // Find all links in the about section
-        const allLinks = aboutLaunchSection.find('a');
-        
+        const allLinks = aboutLaunchSection.find("a");
+
         // First pass: Look for the phrase "hunted by" and get the link immediately after it
         const aboutHtml = aboutLaunchSection.html() || "";
         // Look specifically for "hunted by" followed by a link
         const hunterRegex = /(?:was\s+)?hunted\s+by\s+[^<]*?<a\s+[^>]*?href="([^"]+)"[^>]*?>([^<]+)<\/a>/i;
         const hunterMatch = aboutHtml.match(hunterRegex);
-        
+
         if (hunterMatch && hunterMatch[1] && hunterMatch[2]) {
           const hunterUrl = hunterMatch[1];
           const hunterName = hunterMatch[2].trim();
           const username = extractUsernameFromUrl(hunterUrl);
-          
+
           hunter = {
             id: "hunter",
             name: hunterName,
@@ -376,14 +378,14 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
             avatarUrl: "",
             profileUrl: hunterUrl.startsWith("http") ? hunterUrl : `${HOST_URL}${hunterUrl}`,
           };
-          
+
           foundHunterSection = true;
           console.log("Found hunter using regex:", hunterName, "with URL:", hunterUrl, "username:", username);
         } else {
           // Second pass: Scan all links and look for ones that appear right after "hunted by" text
           allLinks.each((i, el) => {
             if (foundHunterSection) return false; // Already found the hunter, break the loop
-            
+
             const link = $(el);
             const linkText = link.text().trim();
             // Get content before this link to check for "hunted by"
@@ -401,13 +403,13 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
             } catch (error) {
               console.error("Error getting HTML before link:", error);
             }
-            
+
             // Check if "hunted by" appears right before this link
             const hunterPhrasePos = beforeLink.lastIndexOf("hunted by");
             if (hunterPhrasePos !== -1 && hunterPhrasePos > beforeLink.length - 50) {
               const hunterUrl = link.attr("href") || "";
               const username = extractUsernameFromUrl(hunterUrl);
-              
+
               hunter = {
                 id: "hunter",
                 name: linkText,
@@ -415,64 +417,64 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
                 avatarUrl: "",
                 profileUrl: hunterUrl.startsWith("http") ? hunterUrl : `${HOST_URL}${hunterUrl}`,
               };
-              
+
               foundHunterSection = true;
               console.log("Found hunter by proximity:", linkText, "with URL:", hunterUrl);
               return false; // Break the loop
             }
           });
         }
-        
+
         if (!foundHunterSection) {
           console.log("Could not find hunter in the about section");
         }
       } else {
         foundHunterSection = true;
       }
-      
+
       // STEP 2: Extract maker information - a product MAY have makers
       // Only look for makers if we don't already have them from Apollo data
       if (makers.length === 0 && aboutText.includes("Made by")) {
         // Look for makers using a more reliable approach
         const aboutHtml = aboutLaunchSection.html() || "";
-        
+
         // Define regex to find "Made by" followed by links
         const makerSectionRegex = /Made\s+by\s+([\s\S]*?)(?:Featured\s+on|in\s+<a[^>]*?href="\/topics\/)/i;
         const makerSectionMatch = aboutHtml.match(makerSectionRegex);
-        
+
         if (makerSectionMatch && makerSectionMatch[1]) {
           foundMakerSection = true;
           const makerSection = makerSectionMatch[1];
-          
+
           // Get all links in the maker section
           const makerLinksMatches = makerSection.match(/<a\s+[^>]*?href="([^"]+)"[^>]*?>([^<]+)<\/a>/g) || [];
-          
+
           for (const linkMatch of makerLinksMatches) {
             const urlMatch = linkMatch.match(/href="([^"]+)"/i);
             const nameMatch = linkMatch.match(/>([^<]+)<\/a>/i);
-            
+
             if (urlMatch && urlMatch[1] && nameMatch && nameMatch[1]) {
               const makerUrl = urlMatch[1];
               const makerName = nameMatch[1].trim();
-              
+
               // Skip topic links and non-user profile links
               if (makerUrl.includes("/topics/") || !makerUrl.includes("@")) {
                 continue;
               }
-              
+
               const username = extractUsernameFromUrl(makerUrl);
-              
+
               // Skip if this is actually the hunter (unless they're explicitly listed as a maker)
               if (hunter && username === hunter.username && !makerSection.includes("Made by")) {
                 console.log("Skipping hunter from makers list:", makerName);
                 continue;
               }
-              
+
               // Skip if no username or if this is a duplicate
-              if (!username || makers.some(m => m.username === username)) {
+              if (!username || makers.some((m) => m.username === username)) {
                 continue;
               }
-              
+
               makers.push({
                 id: `maker-${username}`,
                 name: makerName,
@@ -480,12 +482,12 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
                 avatarUrl: "", // We'll skip avatar for simplicity
                 profileUrl: makerUrl.startsWith("http") ? makerUrl : `${HOST_URL}${makerUrl}`,
               });
-              
+
               console.log("Found maker:", makerName, "with URL:", makerUrl);
             }
           }
         }
-        
+
         if (!foundMakerSection) {
           console.log("No makers section found, or no makers in this product");
         }
@@ -498,7 +500,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
       // Check if we already parsed Apollo data earlier
       const scriptContent = $('script:contains("ApolloSSRDataTransport")').text();
       const apolloDataMatch = scriptContent.match(/"events":(\[.+\])\}\)/)?.[1];
-      
+
       if (apolloDataMatch) {
         const sanitizedData = sanitizeJsonString(apolloDataMatch);
         if (sanitizedData) {
@@ -512,7 +514,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
     } catch (e) {
       console.error("Error getting Apollo post data:", e);
     }
-    
+
     // Only use Apollo data as a fallback for hunter
     if (!hunter && apolloPostData && apolloPostData.hunter) {
       hunter = {
@@ -523,10 +525,15 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
         profileUrl: `${HOST_URL}@${apolloPostData.hunter.username}`,
       };
     }
-    
+
     // Only use Apollo data as a fallback for makers
-    if (makers.length === 0 && apolloPostData && apolloPostData.makers && 
-        Array.isArray(apolloPostData.makers) && apolloPostData.makers.length > 0) {
+    if (
+      makers.length === 0 &&
+      apolloPostData &&
+      apolloPostData.makers &&
+      Array.isArray(apolloPostData.makers) &&
+      apolloPostData.makers.length > 0
+    ) {
       makers = apolloPostData.makers.map((maker) => ({
         id: maker.id || `maker-${maker.username}`,
         name: maker.name,
@@ -536,7 +543,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
         profileUrl: `${HOST_URL}@${maker.username}`,
       }));
     }
-    
+
     // If we have a hunter badge in the team section but no hunter yet, use that as a last resort
     if (!hunter) {
       const teamSection = $('.styles_metadataItem__YJEgI:contains("Meet the team"), [data-test="team-section"]');
@@ -545,15 +552,15 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
         teamSection.find("a").each((i, el) => {
           const teamMemberEl = $(el);
           const hasHunterBadge = teamMemberEl.find('span:contains("Hunter"), [data-test="hunter-badge"]').length > 0;
-          
+
           if (hasHunterBadge) {
             const hunterUrl = teamMemberEl.attr("href");
             const hunterName = teamMemberEl.find("div").first().text().trim() || teamMemberEl.text().trim();
             const hunterImage = teamMemberEl.find("img").attr("src");
-            
+
             if (hunterName && hunterUrl) {
               const username = extractUsernameFromUrl(hunterUrl);
-              
+
               hunter = {
                 id: "hunter",
                 name: hunterName,
@@ -879,30 +886,30 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
     const featuredImage = metadata.image || undefined;
 
     // Make sure we preserve the hunter and makers information
-    console.log('Enhanced product hunter:', enhancedProduct.hunter);
-    console.log('Enhanced product makers:', enhancedProduct.makers);
-    
+    console.log("Enhanced product hunter:", enhancedProduct.hunter);
+    console.log("Enhanced product makers:", enhancedProduct.makers);
+
     // Before returning the enhanced product, ensure the hunter is not incorrectly in the makers list
     // Only remove the hunter from makers if they weren't EXPLICITLY listed as a maker
     if (enhancedProduct.hunter && enhancedProduct.makers && enhancedProduct.makers.length > 0) {
       const hunterUsername = enhancedProduct.hunter.username;
-      
+
       // Always filter out the hunter from the makers list unless we're confident they're also a maker
       // This is a key fix to ensure the hunter doesn't show up incorrectly in the makers list
       const explicitlyListedAsMaker = false; // Default assumption: hunter is not a maker unless proven otherwise
-      
+
       if (!explicitlyListedAsMaker) {
         // If the hunter isn't explicitly listed as a maker, remove them from the makers list
-        enhancedProduct.makers = enhancedProduct.makers.filter(maker => {
+        enhancedProduct.makers = enhancedProduct.makers.filter((maker) => {
           return maker.username !== hunterUsername;
         });
-        
+
         console.log("Filtered makers list to remove hunter that wasn't explicitly listed as maker");
       } else {
         console.log("Keeping hunter in makers list because they are explicitly listed there");
       }
     }
-    
+
     // Create the final enhanced product
     const finalProduct = {
       ...enhancedProduct,
@@ -913,10 +920,10 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
       hunter: enhancedProduct.hunter || product.hunter,
       makers: enhancedProduct.makers || product.makers,
     };
-    
+
     console.log("Final product hunter:", finalProduct.hunter);
     console.log("Final product makers:", finalProduct.makers);
-    
+
     return finalProduct;
   } catch (error) {
     console.error(`Error enhancing product ${product.id} with metadata:`, error);
