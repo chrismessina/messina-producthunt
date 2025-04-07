@@ -682,7 +682,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
                 username: postData.user.username,
                 avatarUrl: postData.user.profileImage || "",
                 profileImage: postData.user.profileImage,
-                profileUrl: `${HOST_URL}/@${postData.user.username}`,
+                profileUrl: `${HOST_URL}@${postData.user.username}`,
               });
             }
           }

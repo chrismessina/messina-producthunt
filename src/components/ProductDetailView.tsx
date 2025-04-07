@@ -119,7 +119,7 @@ export function ProductDetailView({
                     });
                     open(product.hunter.profileUrl);
                   } else if (product.hunter?.username) {
-                    const profileUrl = `${HOST_URL}/@${product.hunter.username}`;
+                    const profileUrl = `${HOST_URL}@${product.hunter.username}`;
                     showToast({
                       style: Toast.Style.Success,
                       title: `Opening hunter profile: ${product.hunter.name}`,
@@ -147,7 +147,7 @@ export function ProductDetailView({
                       });
                       open(maker.profileUrl);
                     } else if (maker.username) {
-                      const profileUrl = `${HOST_URL}/@${maker.username}`;
+                      const profileUrl = `${HOST_URL}@${maker.username}`;
                       showToast({
                         style: Toast.Style.Success,
                         title: `Opening maker profile: ${maker.name}`,
