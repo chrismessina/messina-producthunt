@@ -354,7 +354,7 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
     if (aboutLaunchSection.length > 0) {
       const aboutText = aboutLaunchSection.text();
       console.log("About launch text:", aboutText);
-      
+
       // Store this critical text in the product object for future use
       // This contains the "Made by" attribution information
       product.description = aboutText;
@@ -471,9 +471,12 @@ async function scrapeDetailedProductInfo(product: Product): Promise<Product> {
               // Only skip the hunter from the makers list if they're not explicitly listed as a maker
               // If Made by <hunter_name> appears in the makers section, they should be BOTH a hunter and maker
               const explicitlyListedAsMaker = makerSection.includes(`Made by ${makerName}`);
-              
+
               if (hunter && username === hunter.username && !explicitlyListedAsMaker) {
-                console.log("Skipping hunter from makers list since they're not explicitly listed as maker:", makerName);
+                console.log(
+                  "Skipping hunter from makers list since they're not explicitly listed as maker:",
+                  makerName,
+                );
                 continue;
               } else if (hunter && username === hunter.username && explicitlyListedAsMaker) {
                 console.log("Keeping hunter in makers list because they are explicitly listed as maker:", makerName);
@@ -903,11 +906,11 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
     if (enhancedProduct.hunter && enhancedProduct.makers && enhancedProduct.makers.length > 0) {
       const hunterUsername = enhancedProduct.hunter.username;
       const hunterName = enhancedProduct.hunter.name;
-      
+
       // IMPORTANT: Generic solution to determine if the hunter should also be included in the makers list
       // We need to determine if the hunter is EXPLICITLY mentioned as a maker
       // This ensures hunters who are only hunters don't get incorrectly listed as makers
-      
+
       // Default assumption: A hunter is NOT also a maker unless we can prove it
       let hunterIsMaker = false;
 
@@ -915,38 +918,34 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
       // We'll use the product description, which should include the "About this launch" section
       const aboutLaunchText = product.description || "";
       console.log(`Complete about launch text: "${aboutLaunchText.substring(0, 300)}..."`);
-      
+
       // Look for the definitive "Made by [hunterName]" pattern
       // This is the most reliable indicator that someone is marked as a maker
       // Using case-insensitive regex with 'i' flag
-      const madeByHunterPattern = new RegExp(`Made by\\s+[^.]*?\\b${hunterName}\\b`, 'i');
-      
+      const madeByHunterPattern = new RegExp(`Made by\\s+[^.]*?\\b${hunterName}\\b`, "i");
+
       // Single check for the pattern - the regex is already case-insensitive
       if (aboutLaunchText.match(madeByHunterPattern)) {
         console.log(`Found "Made by ${hunterName}" pattern - definitive maker attribution`);
         hunterIsMaker = true;
       }
-      
+
       // If we still haven't found it, do one final check for the pattern in the product name/description
       if (!hunterIsMaker) {
-        const productInfo = [
-          product.name || "",
-          product.tagline || "",
-          enhancedProduct.description || ""
-        ].join(" ");
-        
+        const productInfo = [product.name || "", product.tagline || "", enhancedProduct.description || ""].join(" ");
+
         if (productInfo.includes(`Made by ${hunterName}`)) {
           console.log(`Found "Made by ${hunterName}" in other product text`);
           hunterIsMaker = true;
         }
       }
-      
+
       // For logging purposes, track which pattern matched the hunter as a maker
       let matchedPattern = hunterIsMaker ? "Made by attribution pattern" : "";
-      
+
       // We've already done the key check above - the "Made by" pattern
       // No need for additional checks
-      
+
       // Final heuristic: Consider if the hunter has been explicitly included in the makers list
       // This would happen if the Product Hunt page's HTML specifically listed them in the makers section
       // But this alone isn't sufficient - we need to be sure they're not there by accident
@@ -954,13 +953,14 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
         // Count how many makers we have - if there's only one maker and it's the hunter,
         // it's more likely to be a mistake than if there are multiple makers including the hunter
         const makerCount = enhancedProduct.makers.length;
-        
+
         // Check if the hunter appears in the makers list with a matching name
-        const hunterInMakersList = enhancedProduct.makers.some(maker => 
-          maker.username === hunterUsername && 
-          (maker.name === hunterName || maker.name.includes(hunterName) || hunterName.includes(maker.name))
+        const hunterInMakersList = enhancedProduct.makers.some(
+          (maker) =>
+            maker.username === hunterUsername &&
+            (maker.name === hunterName || maker.name.includes(hunterName) || hunterName.includes(maker.name)),
         );
-        
+
         // If there are multiple makers and the hunter is among them, it's more likely intentional
         // This helps distinguish cases where a single hunter gets incorrectly added to makers
         if (hunterInMakersList && (makerCount > 1 || aboutLaunchText.toLowerCase().includes("made by"))) {
@@ -968,14 +968,14 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
           matchedPattern = "Hunter explicitly in makers list with multiple makers or 'made by' context";
         }
       }
-      
+
       // Log the decision and reasoning
       if (hunterIsMaker) {
         console.log(`Hunter "${hunterName}" is determined to be a maker based on pattern: ${matchedPattern}`);
       } else {
         console.log(`Hunter "${hunterName}" is not explicitly identified as a maker in product text`);
       }
-      
+
       // Make the final decision - keep or remove the hunter from makers list
       if (!hunterIsMaker) {
         // If the hunter isn't explicitly listed as a maker, remove them from the makers list
@@ -986,7 +986,9 @@ export async function enhanceProductWithMetadata(product: Product): Promise<Prod
         });
 
         if (originalLength !== enhancedProduct.makers.length) {
-          console.log(`Filtered out hunter "${hunterName}" from makers list as they aren't explicitly listed as a maker`);
+          console.log(
+            `Filtered out hunter "${hunterName}" from makers list as they aren't explicitly listed as a maker`,
+          );
         }
       } else {
         console.log(`Keeping hunter "${hunterName}" in makers list because they are explicitly listed as maker`);
