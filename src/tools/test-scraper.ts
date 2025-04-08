@@ -11,15 +11,15 @@ import { getFrontpageProducts } from "../api/scraper";
  */
 async function testScraper() {
   console.log("Testing the improved scraper with leaderboard logging...");
-  
+
   try {
     const result = await getFrontpageProducts();
-    
+
     if (result.error) {
       console.error("Error:", result.error);
     } else {
       console.log(`Successfully fetched ${result.products.length} products`);
-      
+
       // Display a summary of the products and their vote counts
       console.log("\n--- PRODUCT SUMMARY ---");
       result.products.forEach((product, index) => {
